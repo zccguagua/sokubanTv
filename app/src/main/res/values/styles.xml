@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SokobanTV" parent="@android:style/Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/bg_deep</item>
+        <item name="android:colorAccent">@color/accent</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+
+    <style name="Dialog.SokobanTV" parent="@android:style/Theme.Material.Dialog.Alert">
+        <item name="android:windowBackground">@color/card</item>
+        <item name="android:colorAccent">@color/accent</item>
+        <item name="android:textColorPrimary">@color/text</item>
+    </style>
+</resources>

@@ -1,0 +1,12 @@
+# Normalise line endings so the wrapper works on Linux/macOS too.
+* text=auto eol=lf
+
+# Windows batch files must keep CRLF.
+*.bat text eol=crlf
+
+# Shell scripts must stay LF.
+gradlew text eol=lf
+*.sh text eol=lf
+
+*.png binary
+*.jar binary

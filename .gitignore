@@ -1,0 +1,13 @@
+*.iml
+.gradle/
+.idea/
+build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+tools/out/
+__pycache__/
+*.pyc
+*.hprof
+.DS_Store

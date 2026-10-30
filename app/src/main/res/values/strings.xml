@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">推箱子 TV</string>
+    <string name="app_title">推箱子</string>
+    <string name="app_subtitle">SOKOBAN · Android TV</string>
+    <string name="hint_select">方向键选择 · OK 开始</string>
+    <string name="hint_game">方向键移动 · OK 菜单 · BACK 返回</string>
+    <string name="level_fmt">第 %1$d 关</string>
+    <string name="completed_fmt">已通关 %1$d / %2$d</string>
+</resources>
