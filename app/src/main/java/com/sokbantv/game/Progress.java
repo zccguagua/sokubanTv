@@ -10,6 +10,7 @@ public final class Progress {
     private static final String KEY_BEST_MOVES = "best_moves_";
     private static final String KEY_BEST_PUSHES = "best_pushes_";
     private static final String KEY_LAST_LEVEL = "last_level";
+    private static final String KEY_STRICT_INPUT = "strict_input";
 
     private final SharedPreferences prefs;
 
@@ -54,6 +55,18 @@ public final class Progress {
 
     public int lastLevel() {
         return prefs.getInt(KEY_LAST_LEVEL, 0);
+    }
+
+    /**
+     * Strict input mode widens the anti double-fire window, for remotes that
+     * repeat every press with a longer delay than usual.
+     */
+    public boolean isStrictInput() {
+        return prefs.getBoolean(KEY_STRICT_INPUT, false);
+    }
+
+    public void setStrictInput(boolean strict) {
+        prefs.edit().putBoolean(KEY_STRICT_INPUT, strict).apply();
     }
 
     public void setLastLevel(int index) {

@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -30,6 +31,7 @@ public class GameActivity extends Activity implements BoardView.Listener {
 
     private boolean winShown;
     private AlertDialog menuDialog;
+    private InputGuard inputGuard;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +50,9 @@ public class GameActivity extends Activity implements BoardView.Listener {
         progress.setLastLevel(level.index);
 
         engine = new GameEngine(level);
+        inputGuard = new InputGuard(progress.isStrictInput()
+                ? InputGuard.STRICT_WINDOW_MS
+                : InputGuard.STANDARD_WINDOW_MS);
         setContentView(buildContent());
         updateHud();
     }
@@ -111,41 +116,56 @@ public class GameActivity extends Activity implements BoardView.Listener {
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_UP:
             case KeyEvent.KEYCODE_W:
-                tryMove(0, -1);
+                if (accept(keyCode)) {
+                    tryMove(0, -1);
+                }
                 return true;
             case KeyEvent.KEYCODE_DPAD_DOWN:
             case KeyEvent.KEYCODE_S:
-                tryMove(0, 1);
+                if (accept(keyCode)) {
+                    tryMove(0, 1);
+                }
                 return true;
             case KeyEvent.KEYCODE_DPAD_LEFT:
             case KeyEvent.KEYCODE_A:
-                tryMove(-1, 0);
+                if (accept(keyCode)) {
+                    tryMove(-1, 0);
+                }
                 return true;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
             case KeyEvent.KEYCODE_D:
-                tryMove(1, 0);
+                if (accept(keyCode)) {
+                    tryMove(1, 0);
+                }
                 return true;
             case KeyEvent.KEYCODE_DPAD_CENTER:
             case KeyEvent.KEYCODE_ENTER:
             case KeyEvent.KEYCODE_NUMPAD_ENTER:
             case KeyEvent.KEYCODE_BUTTON_A:
             case KeyEvent.KEYCODE_MENU:
-                if (event.getRepeatCount() == 0) {
+                if (event.getRepeatCount() == 0 && accept(keyCode)) {
                     showMenu();
                 }
                 return true;
             case KeyEvent.KEYCODE_Z:
             case KeyEvent.KEYCODE_DEL:
-                undo();
+                if (accept(keyCode)) {
+                    undo();
+                }
                 return true;
             case KeyEvent.KEYCODE_R:
-                if (event.getRepeatCount() == 0) {
+                if (event.getRepeatCount() == 0 && accept(keyCode)) {
                     restart();
                 }
                 return true;
             default:
                 return super.onKeyDown(keyCode, event);
         }
+    }
+
+    /** Drops the second event of a phantom double press from flaky remotes. */
+    private boolean accept(int keyCode) {
+        return inputGuard != null && inputGuard.accept(keyCode, SystemClock.uptimeMillis());
     }
 
     private void tryMove(int dx, int dy) {
@@ -213,6 +233,9 @@ public class GameActivity extends Activity implements BoardView.Listener {
                 "撤销一步",
                 "重新开始",
                 "返回关卡列表",
+                progress.isStrictInput()
+                        ? "遥控器防连击：严格（300ms）"
+                        : "遥控器防连击：标准（70ms）",
         };
         menuDialog = new AlertDialog.Builder(this, R.style.Dialog_SokobanTV)
                 .setTitle(getString(R.string.level_fmt, engine.level().index + 1))
@@ -230,6 +253,9 @@ public class GameActivity extends Activity implements BoardView.Listener {
                             case 3:
                                 finish();
                                 break;
+                            case 4:
+                                toggleStrictInput();
+                                break;
                             default:
                                 break;
                         }
@@ -237,6 +263,27 @@ public class GameActivity extends Activity implements BoardView.Listener {
                 })
                 .create();
         menuDialog.show();
+    }
+
+    /**
+     * Switches between the standard 70 ms filter and a 300 ms one. The strict
+     * window suits remotes that repeat a press with a longer delay.
+     */
+    private void toggleStrictInput() {
+        boolean strict = !progress.isStrictInput();
+        progress.setStrictInput(strict);
+        inputGuard = new InputGuard(strict
+                ? InputGuard.STRICT_WINDOW_MS
+                : InputGuard.STANDARD_WINDOW_MS);
+        // Reopen the menu so the new state is visible straight away.
+        board.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isFinishing()) {
+                    showMenu();
+                }
+            }
+        }, 120);
     }
 
     private void onSolved() {
