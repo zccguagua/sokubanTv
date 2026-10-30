@@ -19,15 +19,46 @@
 
 ## 构建
 
+环境要求：**JDK 17+**、Android SDK（platform 35 + build-tools 35）。
+
 ```bash
-./gradlew assembleDebug        # 或者用 Android Studio 直接打开
+# 方式一：Android Studio 打开项目根目录，等 Sync 完成后点 Run
+
+# 方式二：命令行
+./gradlew assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-- 编译 SDK 35 / targetSdk 35 / minSdk 21，Java 17，无 AndroidX。
-- `local.properties` 里的 `sdk.dir` 指向本机 SDK，换机器时改一下即可。
+### 刚 clone 下来需要做的唯一一件事：告诉它 SDK 在哪
+
+`local.properties` 是**机器相关**的文件，故意不提交到仓库（里面是绝对路径）。
+所以 clone 后它并不存在，构建会报：
+
+```
+SDK location not found. Define a valid SDK location with an ANDROID_HOME
+environment variable or by setting the sdk.dir path in your project's
+local properties file at .../local.properties
+```
+
+三种解决办法，任选其一：
+
+1. 用 **Android Studio** 打开项目 —— 它会自动生成 `local.properties`；
+2. 设环境变量：`export ANDROID_HOME=/path/to/Android/Sdk`（Windows：`set ANDROID_HOME=D:\Sdk`）；
+3. 自己在项目根目录新建 `local.properties`，写一行：
+   ```properties
+   sdk.dir=D\:\\Sdk
+   ```
+   （Windows 路径里的 `:` 和 `\` 都要转义；Linux/macOS 写 `sdk.dir=/home/me/Android/Sdk` 即可）
+
+其余说明：
+
+- 编译 SDK 35 / targetSdk 35 / minSdk 21，Java 17，无 AndroidX、无第三方依赖。
+- **不需要 Python。** `tools/` 只是生成/校验关卡和画图用的离线脚本，
+  不参与构建；删掉整个 `tools/` 目录也能正常编译。产物（`levels.txt`、两张 png）已经在仓库里了。
+- **首次构建需要联网**（下载 Gradle 8.11.1 发行版与 AGP 依赖），之后可离线。
 - 清单里带 `LEANBACK_LAUNCHER` 入口、`android:banner`（320×180），并声明
   `touchscreen`/`leanback` 为可选，所以同一个 APK 也能装到手机上调试。
+- 连 GitHub 不稳的网络下，可先 `git config --global http.version HTTP/1.1` 再 clone/push。
 
 ## 关卡
 
