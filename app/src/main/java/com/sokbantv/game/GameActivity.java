@@ -24,6 +24,7 @@ public class GameActivity extends Activity implements BoardView.Listener {
     private Progress progress;
     private GameEngine engine;
     private BoardView board;
+    private SoundEffects soundEffects;
 
     private TextView titleView;
     private TextView statsView;
@@ -50,11 +51,21 @@ public class GameActivity extends Activity implements BoardView.Listener {
         progress.setLastLevel(level.index);
 
         engine = new GameEngine(level);
+        soundEffects = new SoundEffects();
         inputGuard = new InputGuard(progress.isStrictInput()
                 ? InputGuard.STRICT_WINDOW_MS
                 : InputGuard.STANDARD_WINDOW_MS);
         setContentView(buildContent());
         updateHud();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (soundEffects != null) {
+            soundEffects.release();
+            soundEffects = null;
+        }
     }
 
     private View buildContent() {
@@ -173,7 +184,13 @@ public class GameActivity extends Activity implements BoardView.Listener {
             return;
         }
         board.setFacing(dx, dy);
+        int pushesBefore = engine.pushes();
         if (engine.move(dx, dy)) {
+            if (engine.pushes() > pushesBefore) {
+                soundEffects.playPush();
+            } else {
+                soundEffects.playStep();
+            }
             board.invalidate();
             updateHud();
             if (engine.isSolved()) {
@@ -189,6 +206,7 @@ public class GameActivity extends Activity implements BoardView.Listener {
             return;
         }
         if (engine.undo()) {
+            soundEffects.playUndo();
             board.invalidate();
             updateHud();
         }
@@ -288,6 +306,7 @@ public class GameActivity extends Activity implements BoardView.Listener {
 
     private void onSolved() {
         winShown = true;
+        soundEffects.playWin();
         progress.recordWin(engine.level().index, engine.moves(), engine.pushes());
         updateHud();
         board.postDelayed(new Runnable() {
