@@ -3,6 +3,7 @@ package com.sokbantv.game;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.os.Build;
 import android.util.Log;
 
 /**
@@ -59,9 +60,19 @@ public final class SoundEffects {
                 AudioFormat.ENCODING_PCM_16BIT,
                 samples.length * 2,
                 AudioTrack.MODE_STATIC);
-        track.setVolume(VOLUME);
+        setVolume(track, VOLUME);
         track.write(samples, 0, samples.length);
         return track;
+    }
+
+    /** AudioTrack#setVolume(float) is API 21; older releases only have the stereo setter. */
+    @SuppressWarnings("deprecation")
+    private static void setVolume(AudioTrack track, float volume) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            track.setVolume(volume);
+        } else {
+            track.setStereoVolume(volume, volume);
+        }
     }
 
     private void play(AudioTrack track) {

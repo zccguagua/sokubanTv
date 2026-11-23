@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.SokobanTV" parent="@android:style/Theme.Material.NoActionBar.Fullscreen">
+    <!--
+      API 19（Android 4.4）基线主题：Theme.Material 是 API 21 才有的，
+      低版本会直接找不到父样式。21+ 用 values-v21 里的同名主题覆盖。
+    -->
+    <style name="Theme.SokobanTV" parent="@android:style/Theme.Holo.NoActionBar.Fullscreen">
         <item name="android:windowBackground">@color/bg_deep</item>
-        <item name="android:colorAccent">@color/accent</item>
         <item name="android:windowActionModeOverlay">true</item>
     </style>
 
-    <style name="Dialog.SokobanTV" parent="@android:style/Theme.Material.Dialog.Alert">
+    <!-- Theme.Holo.Dialog.Alert 是私有样式，公开版本只有 Theme.Holo.Dialog。 -->
+    <style name="Dialog.SokobanTV" parent="@android:style/Theme.Holo.Dialog">
         <item name="android:windowBackground">@color/card</item>
-        <item name="android:colorAccent">@color/accent</item>
         <item name="android:textColorPrimary">@color/text</item>
     </style>
 </resources>

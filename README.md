@@ -37,7 +37,8 @@ Android 只在两个事件时间戳完全相同时才自动去重，所以游戏
 
 ## 构建
 
-环境要求：**JDK 17+**、Android SDK（platform 35 + build-tools 35）。
+环境要求：**JDK 17+**、Android SDK（platform 35 + build-tools 35）。安装包最低支持
+Android 4.4（API 19）。
 
 ```bash
 # 方式一：Android Studio 打开项目根目录，等 Sync 完成后点 Run
@@ -70,7 +71,10 @@ local properties file at .../local.properties
 
 其余说明：
 
-- 编译 SDK 35 / targetSdk 35 / minSdk 21，Java 17，无 AndroidX、无第三方依赖。
+- 编译 SDK 35 / targetSdk 35 / minSdk 19，Java 17，无 AndroidX、无第三方依赖。
+- 主题按 API 分段：`values/styles.xml`（Holo，API 19 基线）/ `values-v21/styles.xml`（Material）。
+  搜索图标网格用的是带权重的 `LinearLayout` 行，而不是 `GridLayout`——后者的权重列
+  (`GridLayout.spec(start, weight)`) 是 API 21 才有的。
 - **不需要 Python。** `tools/` 只是生成/校验关卡和画图用的离线脚本，
   不参与构建；删掉整个 `tools/` 目录也能正常编译。产物（`levels.txt`、两张 png）已经在仓库里了。
 - **首次构建需要联网**（下载 Gradle 8.11.1 发行版与 AGP 依赖），之后可离线。

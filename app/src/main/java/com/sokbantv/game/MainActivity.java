@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -31,7 +30,7 @@ public class MainActivity extends Activity {
     private Progress progress;
 
     private final List<Tile> tiles = new ArrayList<>();
-    private GridLayout grid;
+    private LinearLayout grid;
     private ScrollView scroll;
     private TextView counterView;
 
@@ -68,17 +67,34 @@ public class MainActivity extends Activity {
         scrollParams.topMargin = Ui.dp(this, 22);
         column.addView(scroll, scrollParams);
 
-        grid = new GridLayout(this);
-        grid.setColumnCount(columnsForScreen());
-        grid.setUseDefaultMargins(false);
-        grid.setAlignmentMode(GridLayout.ALIGN_BOUNDS);
+        // Rows of a weighted LinearLayout instead of GridLayout: the weighted-column
+        // overloads of GridLayout.spec() only exist from API 21.
+        grid = new LinearLayout(this);
+        grid.setOrientation(LinearLayout.VERTICAL);
         scroll.addView(grid, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
 
         List<Level> levels = repository.levels();
-        for (Level level : levels) {
-            grid.addView(createTile(level), tileParams());
+        int columns = columnsForScreen();
+        LinearLayout row = null;
+        for (int i = 0; i < levels.size(); i++) {
+            if (i % columns == 0) {
+                row = new LinearLayout(this);
+                row.setOrientation(LinearLayout.HORIZONTAL);
+                grid.addView(row, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
+            View tile = createTile(levels.get(i));
+            row.addView(tile, tileParams());
+        }
+        // Pad the last row with invisible spacers so tiles on it keep the same width.
+        int remainder = levels.size() % columns;
+        if (remainder != 0) {
+            for (int i = remainder; i < columns; i++) {
+                row.addView(new View(this), tileParams());
+            }
         }
 
         TextView hint = Ui.label(this, getString(R.string.hint_select),
@@ -127,11 +143,9 @@ public class MainActivity extends Activity {
         return widthDp >= 600 ? 6 : 4;
     }
 
-    private GridLayout.LayoutParams tileParams() {
-        GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-        params.width = 0;
-        params.height = Ui.dp(this, 96);
-        params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+    private LinearLayout.LayoutParams tileParams() {
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                0, Ui.dp(this, 96), 1f);
         int margin = Ui.dp(this, 6);
         params.setMargins(margin, margin, margin, margin);
         return params;
